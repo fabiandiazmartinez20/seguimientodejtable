@@ -23,18 +23,20 @@ public class JFPrincipal extends javax.swing.JFrame {
     /**
      * Creates new form JFPrincipal
      */
+    int estadoG = 0;
     List<Datos> lista = new ArrayList<>();
-    
+    int fila = 0;
+
     public JFPrincipal() {
         initComponents();
         btnguardar.setEnabled(false);
         btncancelar.setEnabled(false);
-        
-       
+        estadotxt(false);
+
         Archivos archivo = new Archivos();
         lista = archivo.Leer();
         cargarDatos();
-        
+
     }
 
     /**
@@ -91,6 +93,11 @@ public class JFPrincipal extends javax.swing.JFrame {
                 "Nombre", "Edad", "Correo"
             }
         ));
+        tablaDatos.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                seleccionarFila(evt);
+            }
+        });
         jScrollPane2.setViewportView(tablaDatos);
 
         jLabel2.setText("Nombre");
@@ -107,8 +114,18 @@ public class JFPrincipal extends javax.swing.JFrame {
         });
 
         btneliminar.setText("Eliminar");
+        btneliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btneliminarActionPerformed(evt);
+            }
+        });
 
         btneditar.setText("Editar");
+        btneditar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btneditarActionPerformed(evt);
+            }
+        });
 
         btnguardar.setText("guardar");
         btnguardar.addActionListener(new java.awt.event.ActionListener() {
@@ -212,31 +229,96 @@ public class JFPrincipal extends javax.swing.JFrame {
         btnnuevo.setEnabled(false);
         btnguardar.setEnabled(true);
         btncancelar.setEnabled(true);
+        btneditar.setEnabled(false);
+        btneliminar.setEnabled(false);
+        estadotxt(true);
+        estadoG = 1;
     }//GEN-LAST:event_btnnuevoActionPerformed
 
     private void btnguardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnguardarActionPerformed
         // TODO add your handling code here:
-        Datos datos = new Datos(txtnombre.getText(),Integer.parseInt(txtedad.getText()),txtcorreo.getText());
-        Archivos archivos = new Archivos();
-        if (archivos.Grabar(datos))
-            JOptionPane.showMessageDialog(null, "se grabo con exito", "informacion",JOptionPane.INFORMATION_MESSAGE);
-        else
-           JOptionPane.showMessageDialog(null, "error al grabar", "informacion",JOptionPane.ERROR_MESSAGE);
-        btnnuevo.setEnabled(true);
-        btnguardar.setEnabled(false);
-        btncancelar.setEnabled(false);
-        
-        Archivos archivo = new Archivos();
-        lista = archivo.Leer();
-       cargarDatos();
+        if (estadoG == 1) {
+
+            Datos datos = new Datos(txtnombre.getText(), Integer.parseInt(txtedad.getText()), txtcorreo.getText());
+            if (lista == null) {
+                lista = new ArrayList<Datos>();
+            }
+            lista.add(datos);
+            Archivos archivos = new Archivos();
+            if (archivos.Grabar(lista)) {
+                JOptionPane.showMessageDialog(null, "se grabo con exito", "informacion", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "error al grabar", "informacion", JOptionPane.ERROR_MESSAGE);
+            }
+            btnnuevo.setEnabled(true);
+            btnguardar.setEnabled(false);
+            btncancelar.setEnabled(false);
+            btneditar.setEnabled(true);
+            btneliminar.setEnabled(true);
+
+            Archivos archivo = new Archivos();
+            lista = archivo.Leer();
+            cargarDatos();
+            estadotxt(false);
+        }
+        if (estadoG == 2) {
+            Datos datos = new Datos(txtnombre.getText(), Integer.parseInt(txtedad.getText()), txtcorreo.getText());
+            lista.set(fila, datos);
+            Archivos archivos = new Archivos();
+            if (archivos.Grabar(lista)) {
+                JOptionPane.showMessageDialog(null, "se actualizo con exito", "informacion", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "error al actualizar", "informacion", JOptionPane.ERROR_MESSAGE);
+            }
+            lista = archivos.Leer();
+            cargarDatos();
+            estadotxt(false);
+        }
     }//GEN-LAST:event_btnguardarActionPerformed
-    
+
     private void btncancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btncancelarActionPerformed
         // TODO add your handling code here:
         btnguardar.setEnabled(false);
-        btncancelar.setEnabled(false);
         btnnuevo.setEnabled(true);
+        btncancelar.setEnabled(false);
     }//GEN-LAST:event_btncancelarActionPerformed
+
+    private void seleccionarFila(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_seleccionarFila
+        // TODO add your handling code here:
+
+        fila = tablaDatos.getSelectedRow();
+        JOptionPane.showMessageDialog(null, "fila: " + fila);
+        txtnombre.setText(String.valueOf(tablaDatos.getValueAt(fila, 0)));
+        txtedad.setText(String.valueOf(tablaDatos.getValueAt(fila, 1)));
+        txtcorreo.setText(String.valueOf(tablaDatos.getValueAt(fila, 2)));
+
+
+    }//GEN-LAST:event_seleccionarFila
+
+    private void btneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneliminarActionPerformed
+        // TODO add your handling code here:
+        int respuesta = JOptionPane.showConfirmDialog(null, "deseas eliminar el registro", "eliminar", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (respuesta == JOptionPane.YES_OPTION) {
+            lista.remove(fila);
+            Archivos archivo = new Archivos();
+            archivo.Grabar(lista);
+            lista = archivo.Leer();
+            cargarDatos();
+            estadotxt(false);
+        }
+    }//GEN-LAST:event_btneliminarActionPerformed
+
+    private void btneditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btneditarActionPerformed
+        // TODO add your handling code here:
+        btnnuevo.setEnabled(false);
+        btnguardar.setEnabled(true);
+        btncancelar.setEnabled(true);
+        btneditar.setEnabled(false);
+        btneliminar.setEnabled(false);
+        estadotxt(true);
+        estadoG = 2;
+
+    }//GEN-LAST:event_btneditarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -272,20 +354,29 @@ public class JFPrincipal extends javax.swing.JFrame {
             }
         });
     }
-    private void cargarDatos(){
-       DefaultTableModel modelotabla = new DefaultTableModel();
-       modelotabla.addColumn("Nombre");
-       modelotabla.addColumn("Edad");
-       modelotabla.addColumn("Correo");
-       tablaDatos.setModel(modelotabla);
+
+    private void cargarDatos() {
+        DefaultTableModel modelotabla = new DefaultTableModel();
+        modelotabla.addColumn("Nombre");
+        modelotabla.addColumn("Edad");
+        modelotabla.addColumn("Correo");
+        tablaDatos.setModel(modelotabla);
         DefaultTableModel tabla = (DefaultTableModel) this.tablaDatos.getModel();
-        
-        for(Datos datos:lista){
-        Object fila[] = new Object[]{datos.getNombre(),datos.getEdad(),datos.getCorreo()};
-        tabla.addRow(fila);
+        if (lista != null) {
+            for (Datos datos : lista) {
+                Object fila[] = new Object[]{datos.getNombre(), datos.getEdad(), datos.getCorreo()};
+                tabla.addRow(fila);
+            }
         }
-        
     }
+
+    private void estadotxt(boolean estado) {
+        txtnombre.setEnabled(estado);
+        txtedad.setEnabled(estado);
+        txtcorreo.setEnabled(estado);
+
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btncancelar;
     private javax.swing.JButton btneditar;
@@ -304,4 +395,5 @@ public class JFPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextField txtedad;
     private javax.swing.JTextField txtnombre;
     // End of variables declaration//GEN-END:variables
+
 }

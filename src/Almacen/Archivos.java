@@ -9,6 +9,7 @@ import Informacion.Convertir;
 import Informacion.Datos;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -28,6 +29,7 @@ public class Archivos {
     public List <Datos> Leer(){
         String linea;
         Datos datos;
+        if (verifica()){
         try {
             FileReader archivo = new FileReader("Datos.txt");
             BufferedReader br = new BufferedReader(archivo);
@@ -38,20 +40,30 @@ public class Archivos {
                 datos = convertir.aclase(linea);
                 contenido.add(datos);
            }
+            br.close();
+            archivo.close();
+            if (!(contenido.size()>=1)){
+                contenido=null;
+                
+            }
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+        }else{
+        contenido=null;
+        }
         return contenido;
-        
+       
     }
-    public boolean Grabar(Datos cadena){
+    public boolean Grabar(List<Datos> lista){
         Convertir convertir = new Convertir();
         boolean estado = true;
         try {
-            FileWriter archivo = new FileWriter("datos.txt",true);
+            FileWriter archivo = new FileWriter("datos.txt");
             BufferedWriter bw = new BufferedWriter(archivo);
+            for(Datos cadena : lista)
             bw.write(convertir.ajson(cadena)+"\n");
             bw.close();
             archivo.close();
@@ -62,5 +74,13 @@ public class Archivos {
         return estado;
         
         
+    }
+    
+    private boolean verifica(){
+        File archivo = new File ("Datos.txt");
+        if (archivo.exists())
+            return true;
+        else
+            return false;
     }
 }
